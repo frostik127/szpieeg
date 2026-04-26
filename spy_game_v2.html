@@ -1,0 +1,613 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0d0d0f;--surface:#16161a;--surface2:#1e1e24;--accent:#e8c840;--accent2:#e85c3a;--text:#f0eee8;--muted:#6b6b78;--border:rgba(255,255,255,0.07);--spy-red:#e85c3a;--civ-green:#4ecb8d;--hot:#c840a0;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+h1,h2,.display{font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+#setup{padding:0;background:#0d0d0f;}
+.setup-header{padding:2rem 1.5rem 0.75rem;border-bottom:1px solid var(--border);text-align:center;position:relative;}
+.logo{font-size:3rem;color:var(--accent);line-height:1;font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;}
+.logo span{color:var(--accent2);}
+.tagline{font-size:0.7rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-top:0.2rem;}
+.lang-switch{position:absolute;top:1.5rem;right:1rem;display:flex;gap:6px;}
+.lang-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:0.3rem 0.6rem;font-size:0.75rem;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;font-family:'DM Sans',sans-serif;}
+.lang-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(232,200,64,0.1);}
+.setup-body{padding:1.25rem;flex:1;display:flex;flex-direction:column;gap:1.25rem;}
+.section-label{font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;}
+.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;}
+.theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.75rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.15s;text-align:left;display:flex;align-items:center;gap:0.5rem;}
+.theme-btn .icon{font-size:1rem;}
+.theme-btn.selected{border-color:var(--accent);background:rgba(232,200,64,0.1);color:var(--accent);}
+.theme-btn.hot{border-color:rgba(200,64,160,0.4);background:rgba(200,64,160,0.05);}
+.theme-btn.hot.selected{border-color:var(--hot);background:rgba(200,64,160,0.15);color:var(--hot);}
+.theme-btn.hot .hot-badge{font-size:0.6rem;background:rgba(200,64,160,0.2);color:var(--hot);border-radius:4px;padding:1px 5px;margin-left:auto;letter-spacing:0.05em;}
+.theme-btn:active{transform:scale(0.97);}
+.counter-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.7rem 1rem;}
+.counter-info{flex:1;}
+.counter-name{font-size:0.9rem;font-weight:500;}
+.counter-sub{font-size:0.7rem;color:var(--muted);}
+.counter-controls{display:flex;align-items:center;gap:0.7rem;}
+.cnt-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;line-height:1;}
+.cnt-btn:active{transform:scale(0.92);background:var(--accent);color:var(--bg);}
+.cnt-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;min-width:2rem;text-align:center;color:var(--accent);}
+.time-select{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-top:0.5rem;}
+.time-opt{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:0.45rem;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:all 0.1s;text-align:center;}
+.time-opt.selected{border-color:var(--accent);color:var(--accent);background:rgba(232,200,64,0.1);}
+.time-opt:active{transform:scale(0.96);}
+.start-btn{background:var(--accent);color:var(--bg);border:none;border-radius:14px;padding:1rem;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.08em;cursor:pointer;width:100%;transition:all 0.15s;margin-top:auto;}
+.start-btn:active{transform:scale(0.98);background:#d4b438;}
+.start-btn:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed;}
+.error-msg{color:var(--accent2);font-size:0.8rem;text-align:center;display:none;}
+.age-gate{background:rgba(200,64,160,0.08);border:1px solid rgba(200,64,160,0.25);border-radius:12px;padding:0.75rem 1rem;display:none;align-items:center;gap:0.75rem;}
+.age-gate.visible{display:flex;}
+.age-gate-text{font-size:0.78rem;color:rgba(200,64,160,0.9);flex:1;line-height:1.4;}
+.age-check{width:20px;height:20px;border-radius:4px;border:1px solid rgba(200,64,160,0.5);background:transparent;cursor:pointer;appearance:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;}
+.age-check:checked{background:var(--hot);border-color:var(--hot);}
+.age-check:checked::after{content:"✓";position:absolute;color:white;font-size:12px;font-weight:600;}
+#card-screen{background:#0d0d0f;align-items:center;justify-content:center;padding:1.5rem;text-align:center;position:relative;}
+.player-indicator{position:absolute;top:1.5rem;left:0;right:0;text-align:center;}
+.player-label{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);}
+.player-num{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--text);}
+.progress-dots{display:flex;gap:6px;justify-content:center;margin-top:0.5rem;flex-wrap:wrap;padding:0 2rem;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+.dot.done{background:var(--accent);}
+.dot.current{background:var(--muted);}
+.card-area{width:100%;max-width:320px;}
+.flip-card{width:100%;aspect-ratio:0.68;perspective:1000px;cursor:pointer;max-height:370px;}
+.flip-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);}
+.flip-inner.flipped{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;}
+.card-back{background:var(--surface);border:1px solid var(--border);}
+.card-back-icon{font-size:3.5rem;opacity:0.3;margin-bottom:1rem;}
+.tap-hint{font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem;}
+.card-front{transform:rotateY(180deg);border:2px solid;}
+.card-front.spy-card{background:#1a0a07;border-color:var(--spy-red);}
+.card-front.civ-card{background:#071a10;border-color:var(--civ-green);}
+.card-front.hot-spy-card{background:#1a0712;border-color:var(--hot);}
+.card-front.hot-civ-card{background:#150715;border-color:rgba(200,64,160,0.6);}
+.role-badge{font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:0.85rem;}
+.spy-card .role-badge{background:rgba(232,92,58,0.2);color:var(--spy-red);}
+.civ-card .role-badge{background:rgba(78,203,141,0.2);color:var(--civ-green);}
+.hot-spy-card .role-badge{background:rgba(200,64,160,0.2);color:var(--hot);}
+.hot-civ-card .role-badge{background:rgba(200,64,160,0.15);color:rgba(200,64,160,0.8);}
+.role-icon{font-size:3.2rem;margin-bottom:0.6rem;}
+.role-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;}
+.spy-card .role-title{color:var(--spy-red);}
+.civ-card .role-title{color:var(--civ-green);}
+.hot-spy-card .role-title{color:var(--hot);}
+.hot-civ-card .role-title{color:rgba(200,64,160,0.8);}
+.location-reveal{margin-top:0.8rem;font-size:0.78rem;color:var(--muted);text-align:center;}
+.location-name{font-size:1rem;font-weight:600;color:var(--text);margin-top:0.2rem;}
+.next-btn{margin-top:1.75rem;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:0.8rem 2rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:0.5rem;}
+.next-btn.hidden{opacity:0;pointer-events:none;}
+.next-btn:active{transform:scale(0.97);}
+#play-screen{background:var(--bg);padding:1.5rem;}
+.play-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:1rem;border-bottom:1px solid var(--border);margin-bottom:1.25rem;}
+.play-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--accent);}
+.spy-count-badge{background:rgba(232,92,58,0.15);border:1px solid rgba(232,92,58,0.3);color:var(--spy-red);font-size:0.72rem;padding:0.3rem 0.7rem;border-radius:20px;letter-spacing:0.1em;}
+.timer-section{text-align:center;margin:1.25rem 0;}
+.timer-display{font-family:'Bebas Neue',sans-serif;font-size:5rem;line-height:1;color:var(--text);}
+.timer-display.danger{color:var(--accent2);}
+.timer-label{font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.25rem;}
+.timer-controls{display:flex;gap:0.75rem;justify-content:center;margin-top:1rem;}
+.t-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0.6rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.1s;}
+.t-btn.accent-btn{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.t-btn:active{transform:scale(0.96);}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.info-row{display:flex;justify-content:space-between;align-items:center;}
+.info-key{font-size:0.78rem;color:var(--muted);}
+.info-val{font-size:0.88rem;font-weight:500;}
+.reveal-btn{background:var(--accent2);border:none;border-radius:12px;padding:0.9rem;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.08em;cursor:pointer;width:100%;color:white;transition:all 0.15s;margin-top:0.5rem;}
+.reveal-btn:active{transform:scale(0.98);}
+#reveal-screen{background:var(--bg);padding:2rem 1.5rem;text-align:center;align-items:center;justify-content:center;}
+.reveal-title{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--accent);margin-bottom:0.4rem;}
+.reveal-subtitle{font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.75rem;}
+.spies-list{width:100%;max-width:360px;margin-bottom:1.75rem;}
+.spy-item{display:flex;align-items:center;gap:1rem;background:rgba(232,92,58,0.08);border:1px solid rgba(232,92,58,0.2);border-radius:12px;padding:0.8rem 1rem;margin-bottom:0.6rem;}
+.spy-avatar{width:36px;height:36px;border-radius:50%;background:rgba(232,92,58,0.2);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.spy-name{font-weight:500;font-size:0.9rem;}
+.spy-tag{font-size:0.68rem;color:var(--spy-red);letter-spacing:0.1em;text-transform:uppercase;}
+.location-reveal-big{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;width:100%;max-width:360px;margin-bottom:1.75rem;}
+.loc-label{font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);}
+.loc-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--text);margin-top:0.2rem;}
+.play-again-btn{background:var(--accent);border:none;border-radius:14px;padding:1rem 2rem;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.08em;cursor:pointer;color:var(--bg);width:100%;max-width:360px;transition:all 0.15s;}
+.play-again-btn:active{transform:scale(0.98);}
+.divider{border:none;border-top:1px solid var(--border);margin:0.25rem 0;}
+</style>
+
+<div id="setup" class="screen active">
+  <div class="setup-header">
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('pl')" id="lang-pl">PL</button>
+      <button class="lang-btn" onclick="setLang('ru')" id="lang-ru">RU</button>
+    </div>
+    <div class="logo">SZPIEG<span>!</span></div>
+    <div class="tagline" id="tagline">Gra towarzyska • Party Game</div>
+  </div>
+  <div class="setup-body">
+    <div>
+      <div class="section-label" id="lbl-theme">Wybierz tematykę</div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+    <div id="age-gate-wrap" class="age-gate">
+      <input type="checkbox" class="age-check" id="age-check" onchange="validateSetup()">
+      <div class="age-gate-text" id="age-gate-text">Potwierdzam, że wszyscy gracze mają ukończone 18 lat. Tematyka zawiera treści dla dorosłych.</div>
+    </div>
+    <div>
+      <div class="section-label" id="lbl-players">Liczba graczy</div>
+      <div class="counter-row">
+        <div class="counter-info">
+          <div class="counter-name" id="lbl-players2">Gracze</div>
+          <div class="counter-sub" id="lbl-maxp">Maks. 20 osób</div>
+        </div>
+        <div class="counter-controls">
+          <button class="cnt-btn" onclick="change('players',-1)">−</button>
+          <div class="cnt-val" id="players-val">4</div>
+          <button class="cnt-btn" onclick="change('players',1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label" id="lbl-spies">Liczba szpiegów</div>
+      <div class="counter-row">
+        <div class="counter-info">
+          <div class="counter-name" id="lbl-spies2">Szpiedzy</div>
+          <div class="counter-sub" id="lbl-maxs">Maks. 5 szpiegów</div>
+        </div>
+        <div class="counter-controls">
+          <button class="cnt-btn" onclick="change('spies',-1)">−</button>
+          <div class="cnt-val" id="spies-val">1</div>
+          <button class="cnt-btn" onclick="change('spies',1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label" id="lbl-time">Czas rundy</div>
+      <div class="time-select">
+        <button class="time-opt" data-t="300" onclick="selectTime(this)">5 min</button>
+        <button class="time-opt selected" data-t="480" onclick="selectTime(this)">8 min</button>
+        <button class="time-opt" data-t="600" onclick="selectTime(this)">10 min</button>
+        <button class="time-opt" data-t="720" onclick="selectTime(this)">12 min</button>
+      </div>
+    </div>
+    <div class="error-msg" id="error-msg"></div>
+    <button class="start-btn" id="start-btn" onclick="startGame()" id="lbl-start">▶ ROZPOCZNIJ GRĘ</button>
+  </div>
+</div>
+
+<div id="card-screen" class="screen">
+  <div class="player-indicator">
+    <div class="player-label" id="lbl-player-ind">Gracz</div>
+    <div class="player-num" id="player-num">1 / 4</div>
+    <div class="progress-dots" id="progress-dots"></div>
+  </div>
+  <div class="card-area">
+    <div class="flip-card" id="flip-card" onclick="flipCard()">
+      <div class="flip-inner" id="flip-inner">
+        <div class="card-face card-back">
+          <div class="card-back-icon">🃏</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--text);letter-spacing:0.05em;" id="card-tap-txt">DOTKNIJ ABY ODKRYĆ</div>
+          <div class="tap-hint" id="card-tap-sub">Tylko ty możesz patrzeć</div>
+        </div>
+        <div class="card-face card-front" id="card-front"></div>
+      </div>
+    </div>
+    <button class="next-btn hidden" id="next-btn" onclick="nextPlayer()">
+      <span id="next-btn-txt">Kolejny gracz</span><span>→</span>
+    </button>
+  </div>
+</div>
+
+<div id="play-screen" class="screen">
+  <div class="play-header">
+    <div class="play-title" id="play-theme-label">—</div>
+    <div class="spy-count-badge" id="spy-count-badge">—</div>
+  </div>
+  <div class="timer-section">
+    <div class="timer-display" id="timer-display">08:00</div>
+    <div class="timer-label" id="lbl-timer-hint">Czas na dyskusję i pytania</div>
+    <div class="timer-controls">
+      <button class="t-btn" onclick="resetTimer()" id="lbl-reset">↺ Reset</button>
+      <button class="t-btn accent-btn" id="timer-toggle" onclick="toggleTimer()">▶ Start</button>
+    </div>
+  </div>
+  <hr class="divider">
+  <div class="info-card" style="margin-top:1rem;">
+    <div class="info-row">
+      <span class="info-key" id="lbl-gracze-key">Gracze</span>
+      <span class="info-val" id="play-players">—</span>
+    </div>
+    <div class="info-row" style="margin-top:0.5rem;">
+      <span class="info-key" id="lbl-tematyka-key">Tematyka</span>
+      <span class="info-val" id="play-theme">—</span>
+    </div>
+  </div>
+  <button class="reveal-btn" onclick="showReveal()" id="lbl-reveal-btn">UJAWNIJ SZPIEGÓW</button>
+</div>
+
+<div id="reveal-screen" class="screen">
+  <div class="reveal-title" id="lbl-ujawnienie">UJAWNIENIE</div>
+  <div class="reveal-subtitle" id="lbl-koniec">Koniec rundy</div>
+  <div class="location-reveal-big">
+    <div class="loc-label" id="lbl-lokacja-was">Lokacja była</div>
+    <div class="loc-name" id="reveal-location">—</div>
+  </div>
+  <div class="spies-list" id="spies-list"></div>
+  <button class="play-again-btn" onclick="goSetup()" id="lbl-nowa-gra">↩ NOWA GRA</button>
+</div>
+
+<script>
+const LANGS = {
+  pl: {
+    tagline:'Gra towarzyska • Party Game',
+    lbl_theme:'Wybierz tematykę',
+    lbl_players:'Liczba graczy',
+    lbl_players2:'Gracze',
+    lbl_maxp:'Maks. 20 osób',
+    lbl_spies:'Liczba szpiegów',
+    lbl_spies2:'Szpiedzy',
+    lbl_maxs:'Maks. 5 szpiegów',
+    lbl_time:'Czas rundy',
+    lbl_start:'▶ ROZPOCZNIJ GRĘ',
+    error_spies:'❌ Za dużo szpiegów dla tej liczby graczy!',
+    error_age:'❌ Potwierdź wiek 18+ aby grać w tę tematykę.',
+    age_gate:'Potwierdzam, że wszyscy gracze mają ukończone 18 lat.',
+    lbl_player_ind:'Gracz',
+    card_tap:'DOTKNIJ ABY ODKRYĆ',
+    card_sub:'Tylko ty możesz patrzeć',
+    role_your:'Twoja rola',
+    spy:'SZPIEG',
+    civilian:'CYWIL',
+    no_location:'Nie znasz lokacji!',
+    spy_hint:'Staraj się nie dać złapać.',
+    civ_hint:'Znajdź szpiega przez pytania.',
+    next_player:'Kolejny gracz',
+    all_ready:'Wszyscy gotowi → Graj',
+    lbl_timer_hint:'Czas na dyskusję i pytania',
+    lbl_reset:'↺ Reset',
+    lbl_gracze:'Gracze',
+    lbl_tematyka:'Tematyka',
+    lbl_reveal:'UJAWNIJ SZPIEGÓW',
+    lbl_ujawnienie:'UJAWNIENIE',
+    lbl_koniec:'Koniec rundy',
+    lbl_lokacja:'Lokacja była',
+    spy_label:'Szpieg',
+    lbl_nowa_gra:'↩ NOWA GRA',
+    spies_badge:(n)=> n===1 ? '🕵️ 1 szpieg' : '🕵️ '+n+' szpiegów',
+    players_label:(n)=> n+' graczy',
+    hot_badge:'18+',
+  },
+  ru: {
+    tagline:'Игра для компании • Party Game',
+    lbl_theme:'Выберите тематику',
+    lbl_players:'Количество игроков',
+    lbl_players2:'Игроки',
+    lbl_maxp:'Макс. 20 человек',
+    lbl_spies:'Количество шпионов',
+    lbl_spies2:'Шпионы',
+    lbl_maxs:'Макс. 5 шпионов',
+    lbl_time:'Время раунда',
+    lbl_start:'▶ НАЧАТЬ ИГРУ',
+    error_spies:'❌ Слишком много шпионов для этого числа игроков!',
+    error_age:'❌ Подтвердите возраст 18+ для этой тематики.',
+    age_gate:'Подтверждаю, что всем игрокам исполнилось 18 лет.',
+    lbl_player_ind:'Игрок',
+    card_tap:'НАЖМИТЕ ЧТОБЫ ОТКРЫТЬ',
+    card_sub:'Смотрите только вы',
+    role_your:'Ваша роль',
+    spy:'ШПИОН',
+    civilian:'МИРНЫЙ',
+    no_location:'Вы не знаете локацию!',
+    spy_hint:'Старайтесь не раскрыться.',
+    civ_hint:'Найдите шпиона через вопросы.',
+    next_player:'Следующий игрок',
+    all_ready:'Все готовы → Играть',
+    lbl_timer_hint:'Время на обсуждение и вопросы',
+    lbl_reset:'↺ Сброс',
+    lbl_gracze:'Игроки',
+    lbl_tematyka:'Тематика',
+    lbl_reveal:'РАСКРЫТЬ ШПИОНОВ',
+    lbl_ujawnienie:'РАСКРЫТИЕ',
+    lbl_koniec:'Конец раунда',
+    lbl_lokacja:'Локация была',
+    spy_label:'Шпион',
+    lbl_nowa_gra:'↩ НОВАЯ ИГРА',
+    spies_badge:(n)=> '🕵️ '+n+(n===1?' шпион':n<5?' шпиона':' шпионов'),
+    players_label:(n)=> n+' игроков',
+    hot_badge:'18+',
+  }
+};
+
+const THEMES_PL = {
+  kraje:{label:'Kraje',icon:'🌍',items:['Polska','Francja','Japonia','Brazylia','Egipt','Australia','Meksyk','Indie','Włochy','Kanada','Niemcy','Chiny','USA','Argentyna','RPA','Korea','Norwegia','Turcja','Tajlandia','Maroko']},
+  miejsca:{label:'Miejsca',icon:'🏛️',items:['Szpital','Lotnisko','Plaża','Biblioteka','Restauracja','Muzeum','Więzienie','Hotel','Park rozrywki','Statek','Stacja kosmiczna','Zamek','Kino','Stadion','Sąd','Kościół','Supermarket','Szkoła','Klub nocny','Bank']},
+  zawody:{label:'Zawody',icon:'💼',items:['Lekarz','Pilot','Nauczyciel','Detektyw','Kucharz','Astronauta','Artysta','Prawnik','Sportowiec','Muzyk','Aktor','Strażak','Policjant','Dziennikarz','Naukowiec','Architekt','Weterynarz','Wojskowy','Kierowca','Programista']},
+  jedzenie:{label:'Jedzenie',icon:'🍕',items:['Pizza','Sushi','Burger','Taco','Pierogi','Paella','Curry','Ramen','Kebab','Pasta','Stek','Lody','Naleśniki','Zupa','Gyros','Shawarma','Fondue','Hot Dog','Bigos','Risotto']},
+  sport:{label:'Sport',icon:'⚽',items:['Piłka nożna','Koszykówka','Tenis','Pływanie','Boks','Siatkówka','Golf','Narciarstwo','Lekkoatletyka','Rugby','Baseball','Hokej','Szermierka','Kolarstwo','Wioślarstwo','Karate','Judo','Biathlon','Wspinaczka','Snooker']},
+  filmy:{label:'Filmy',icon:'🎬',items:['Harry Potter','Star Wars','Marvel','Breaking Bad','Gra o Tron','Matrix','Titanic','Sherlock','Mandalorian','Stranger Things','Batman','James Bond','Hobbit','Wiedźmin','Friends','The Office','Squid Game','Peaky Blinders','Avatar','Interstellar']},
+  muzyka:{label:'Muzyka',icon:'🎵',items:['Rock','Pop','Hip-Hop','Jazz','Klasyczna','Metal','Reggae','Techno','Country','Blues','R&B','Punk','Disco','Soul','Electro','Trap','Indie','Folk','Opera','K-Pop']},
+  historia:{label:'Historia',icon:'🏺',items:['Starożytny Rzym','Wikingowie','II Wojna Światowa','Starożytny Egipt','Średniowiecze','Rewolucja Francuska','Starożytna Grecja','Dziki Zachód','Renesans','Zimna Wojna','Krzyżowcy','Imperium Osmańskie','Aztekowie','Napoleona Epoka','Starożytne Chiny','Inkowie','Rewolucja Przemysłowa','Cesarstwo Romanov','Babilon','Mongolowie']},
+  technologia:{label:'Tech',icon:'💻',items:['Smartfon','Sztuczna Inteligencja','Internet','Blockchain','Robot','Gry Wideo','Media Społecznościowe','Chmura','Cyberbezpieczeństwo','VR/AR','Drukarka 3D','Elektryczny Samochód','Satelita','Superkomputer','Aplikacja Mobilna','Streaming','Kryptowaluta','Dron','Biometria','Startup']},
+  zwierzeta:{label:'Zwierzęta',icon:'🐾',items:['Lew','Delfin','Goryl','Orzeł','Rekin','Panda','Wilk','Ośmiornica','Koń','Tygrys','Niedźwiedź Polarny','Gepard','Słoń','Pingwin','Krokodyl','Papuga','Meduza','Hiena','Kameleon','Orka']},
+  celebryci:{label:'Sławni',icon:'⭐',items:['Elon Musk','Taylor Swift','Cristiano Ronaldo','Beyoncé','Leonardo DiCaprio','Rihanna','Steve Jobs','Lady Gaga','Michael Jordan','Shakira','Jeff Bezos','Adele','Zlatan Ibrahimović','Ariana Grande','Barack Obama','Cardi B','Kanye West','Angelina Jolie','LeBron James','Kim Kardashian']},
+  alkohol:{label:'Alkohole',icon:'🍸',hot:true,items:['Wódka','Whisky','Szampan','Tequila','Rum','Gin','Wino Czerwone','Piwo Ciemne','Martini','Prosecco','Bourbon','Absynt','Sake','Cognac','Sangria','Mojito','Jägermeister','Rosé','Aperol Spritz','Long Island']},
+  randki:{label:'Randki',icon:'💋',hot:true,items:['Pierwsza randka','One Night Stand','Tinder Match','Speed Dating','Open Relationship','Zdrada','Seks na plaży','Erotyczna gra','Strip Poker','Truth or Dare','Miłość na odległość','Sextowanie','Randka w ciemno','Poliamoria','Fetysz','Role Play','Ex i nowa miłość','Pijane wyznanie','Kamasutra','Nocna przygoda']},
+  imprezy:{label:'Impreza',icon:'🎉',hot:true,items:['After Party','Impreza Plenerowa','Striptease','Otwarty Bar','Gra w butelkę','Basen & Jacuzzi','Maski & Kostiumy','VIP Lounge','Impreza na jachcie','Saunateka','Nocna plaża','Rave Underground','Karaoke do rana','Impreza Tematyczna 18+','Kolacja z niespodzianką','Casino Night','Topless Pool Party','Zamknięta Impreza Erotyczna','Dyskoteka Retro','Pijany Poker']},
+};
+
+const THEMES_RU = {
+  kraje:{label:'Страны',icon:'🌍',items:['Россия','Франция','Япония','Бразилия','Египет','Австралия','Мексика','Индия','Италия','Канада','Германия','Китай','США','Аргентина','ЮАР','Корея','Норвегия','Турция','Таиланд','Марокко']},
+  miejsca:{label:'Места',icon:'🏛️',items:['Больница','Аэропорт','Пляж','Библиотека','Ресторан','Музей','Тюрьма','Отель','Парк аттракционов','Корабль','Космическая станция','Замок','Кино','Стадион','Суд','Церковь','Супермаркет','Школа','Ночной клуб','Банк']},
+  zawody:{label:'Профессии',icon:'💼',items:['Врач','Пилот','Учитель','Детектив','Повар','Астронавт','Художник','Юрист','Спортсмен','Музыкант','Актёр','Пожарный','Полицейский','Журналист','Учёный','Архитектор','Ветеринар','Военный','Водитель','Программист']},
+  jedzenie:{label:'Еда',icon:'🍕',items:['Пицца','Суши','Бургер','Тако','Пельмени','Паэлья','Карри','Рамэн','Кебаб','Паста','Стейк','Мороженое','Блины','Суп','Гирос','Шаурма','Фондю','Хот-дог','Борщ','Ризотто']},
+  sport:{label:'Спорт',icon:'⚽',items:['Футбол','Баскетбол','Теннис','Плавание','Бокс','Волейбол','Гольф','Горные лыжи','Лёгкая атлетика','Регби','Бейсбол','Хоккей','Фехтование','Велоспорт','Гребля','Карате','Дзюдо','Биатлон','Скалолазание','Снукер']},
+  filmy:{label:'Фильмы',icon:'🎬',items:['Гарри Поттер','Звёздные войны','Marvel','Во все тяжкие','Игра Престолов','Матрица','Титаник','Шерлок','Мандалорец','Очень странные дела','Бэтмен','Джеймс Бонд','Хоббит','Ведьмак','Друзья','Офис','Игра в кальмара','Острые козырьки','Аватар','Интерстеллар']},
+  muzyka:{label:'Музыка',icon:'🎵',items:['Рок','Поп','Хип-Хоп','Джаз','Классика','Металл','Реггей','Техно','Кантри','Блюз','R&B','Панк','Диско','Соул','Электро','Трэп','Инди','Фолк','Опера','K-Pop']},
+  historia:{label:'История',icon:'🏺',items:['Древний Рим','Викинги','Вторая мировая война','Древний Египет','Средневековье','Французская революция','Древняя Греция','Дикий Запад','Ренессанс','Холодная война','Крестоносцы','Османская империя','Ацтеки','Эпоха Наполеона','Древний Китай','Инки','Промышленная революция','Романовы','Вавилон','Монголы']},
+  technologia:{label:'Технологии',icon:'💻',items:['Смартфон','Искусственный интеллект','Интернет','Блокчейн','Робот','Видеоигры','Социальные сети','Облако','Кибербезопасность','VR/AR','3D-принтер','Электромобиль','Спутник','Суперкомпьютер','Мобильное приложение','Стриминг','Криптовалюта','Дрон','Биометрия','Стартап']},
+  zwierzeta:{label:'Животные',icon:'🐾',items:['Лев','Дельфин','Горилла','Орёл','Акула','Панда','Волк','Осьминог','Конь','Тигр','Белый медведь','Гепард','Слон','Пингвин','Крокодил','Попугай','Медуза','Гиена','Хамелеон','Косатка']},
+  celebryci:{label:'Знаменитости',icon:'⭐',items:['Илон Маск','Тейлор Свифт','Криштиану Роналду','Бейонсе','Леонардо Ди Каприо','Рианна','Стив Джобс','Леди Гага','Майкл Джордан','Шакира','Джефф Безос','Адель','Ибрагимович','Ариана Гранде','Барак Обама','Cardi B','Канье Уэст','Анджелина Джоли','ЛеБрон Джеймс','Ким Кардашьян']},
+  alkohol:{label:'Алкоголь',icon:'🍸',hot:true,items:['Водка','Виски','Шампанское','Текила','Ром','Джин','Красное вино','Тёмное пиво','Мартини','Просекко','Бурбон','Абсент','Саке','Коньяк','Сангрия','Мохито','Ягермайстер','Розе','Апероль Шприц','Лонг Айленд']},
+  randki:{label:'Флирт 18+',icon:'💋',hot:true,items:['Первое свидание','Случайная встреча','Tinder Match','Спид-датинг','Открытые отношения','Измена','Секс на пляже','Эротическая игра','Стрип-покер','Правда или действие','Любовь на расстоянии','Секстинг','Свидание вслепую','Полиамория','Фетиш','Ролевая игра','Бывший и новая любовь','Пьяное признание','Камасутра','Ночное приключение']},
+  imprezy:{label:'Вечеринка 18+',icon:'🎉',hot:true,items:['Afterparty','Вечеринка на природе','Стриптиз','Открытый бар','Бутылочка','Бассейн и Джакузи','Маски и костюмы','VIP-зона','Вечеринка на яхте','Сауна-тека','Ночной пляж','Подпольный рейв','Ночное Karaoke','Тематическая 18+','Ужин с сюрпризом','Casino Night','Topless вечеринка','Закрытая вечеринка','Ретро-дискотека','Пьяный покер']},
+};
+
+let currentLang = 'pl';
+let THEMES = THEMES_PL;
+
+let state = {
+  theme:'kraje',players:4,spies:1,time:480,
+  currentPlayer:0,roles:[],location:'',
+  flipped:false,timerRunning:false,timerVal:480,timerInterval:null
+};
+
+function T(key){ return LANGS[currentLang][key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  THEMES = lang === 'pl' ? THEMES_PL : THEMES_RU;
+  document.getElementById('lang-pl').classList.toggle('active', lang==='pl');
+  document.getElementById('lang-ru').classList.toggle('active', lang==='ru');
+  applyLang();
+  buildThemeGrid();
+  if (!THEMES[state.theme]) state.theme = 'kraje';
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.theme === state.theme);
+  });
+  validateSetup();
+}
+
+function applyLang() {
+  const L = LANGS[currentLang];
+  document.getElementById('tagline').textContent = L.tagline;
+  document.getElementById('lbl-theme').textContent = L.lbl_theme;
+  document.getElementById('lbl-players').textContent = L.lbl_players;
+  document.getElementById('lbl-players2').textContent = L.lbl_players2;
+  document.getElementById('lbl-maxp').textContent = L.lbl_maxp;
+  document.getElementById('lbl-spies').textContent = L.lbl_spies;
+  document.getElementById('lbl-spies2').textContent = L.lbl_spies2;
+  document.getElementById('lbl-maxs').textContent = L.lbl_maxs;
+  document.getElementById('lbl-time').textContent = L.lbl_time;
+  document.getElementById('start-btn').textContent = L.lbl_start;
+  document.getElementById('age-gate-text').textContent = L.age_gate;
+  document.getElementById('lbl-player-ind').textContent = L.lbl_player_ind;
+  document.getElementById('card-tap-txt').textContent = L.card_tap;
+  document.getElementById('card-tap-sub').textContent = L.card_sub;
+  document.getElementById('lbl-timer-hint').textContent = L.lbl_timer_hint;
+  document.getElementById('lbl-reset').textContent = L.lbl_reset;
+  document.getElementById('lbl-gracze-key').textContent = L.lbl_gracze;
+  document.getElementById('lbl-tematyka-key').textContent = L.lbl_tematyka;
+  document.getElementById('lbl-reveal-btn').textContent = L.lbl_reveal;
+  document.getElementById('lbl-ujawnienie').textContent = L.lbl_ujawnienie;
+  document.getElementById('lbl-koniec').textContent = L.lbl_koniec;
+  document.getElementById('lbl-lokacja-was').textContent = L.lbl_lokacja;
+  document.getElementById('lbl-nowa-gra').textContent = L.lbl_nowa_gra;
+}
+
+function buildThemeGrid() {
+  const grid = document.getElementById('theme-grid');
+  grid.innerHTML = '';
+  Object.entries(THEMES).forEach(([key, t]) => {
+    const btn = document.createElement('button');
+    btn.className = 'theme-btn' + (t.hot?' hot':'') + (state.theme===key?' selected':'');
+    btn.dataset.theme = key;
+    btn.onclick = function(){ selectTheme(this); };
+    btn.innerHTML = `<span class="icon" style="font-size:1rem;">${t.icon}</span>${t.label}` + (t.hot ? `<span class="hot-badge">${T('hot_badge')}</span>` : '');
+    grid.appendChild(btn);
+  });
+}
+
+function selectTheme(btn) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.theme = btn.dataset.theme;
+  const isHot = THEMES[state.theme] && THEMES[state.theme].hot;
+  const gate = document.getElementById('age-gate-wrap');
+  gate.classList.toggle('visible', !!isHot);
+  if (!isHot) document.getElementById('age-check').checked = false;
+  validateSetup();
+}
+
+function selectTime(btn) {
+  document.querySelectorAll('.time-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.time = parseInt(btn.dataset.t);
+}
+
+function change(type, delta) {
+  if (type==='players') {
+    state.players = Math.min(20, Math.max(2, state.players + delta));
+    document.getElementById('players-val').textContent = state.players;
+    if (state.spies >= state.players) { state.spies = state.players-1; document.getElementById('spies-val').textContent = state.spies; }
+  } else {
+    state.spies = Math.min(5, Math.max(1, state.spies + delta));
+    document.getElementById('spies-val').textContent = state.spies;
+  }
+  validateSetup();
+}
+
+function validateSetup() {
+  const err = document.getElementById('error-msg');
+  const btn = document.getElementById('start-btn');
+  const isHot = THEMES[state.theme] && THEMES[state.theme].hot;
+  const ageOk = !isHot || document.getElementById('age-check').checked;
+  if (state.spies >= state.players) {
+    err.style.display='block'; err.textContent = T('error_spies'); btn.disabled=true;
+  } else if (!ageOk) {
+    err.style.display='block'; err.textContent = T('error_age'); btn.disabled=true;
+  } else {
+    err.style.display='none'; btn.disabled=false;
+  }
+}
+
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+
+function startGame() {
+  const items = THEMES[state.theme].items;
+  state.location = items[Math.floor(Math.random()*items.length)];
+  state.roles = Array(state.players).fill('civilian');
+  shuffle([...Array(state.players).keys()]).slice(0,state.spies).forEach(i=>state.roles[i]='spy');
+  state.currentPlayer=0; state.flipped=false;
+  buildProgressDots(); updateCardScreen(); showScreen('card-screen');
+}
+
+function buildProgressDots() {
+  const c=document.getElementById('progress-dots'); c.innerHTML='';
+  for(let i=0;i<state.players;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' current':''); d.id='dot-'+i; c.appendChild(d);
+  }
+}
+
+function updateCardScreen() {
+  document.getElementById('player-num').textContent=(state.currentPlayer+1)+' / '+state.players;
+  document.getElementById('flip-inner').classList.remove('flipped');
+  document.getElementById('next-btn').classList.add('hidden');
+  state.flipped=false;
+  for(let i=0;i<state.players;i++){
+    const dot=document.getElementById('dot-'+i);
+    dot.className='dot'+(i<state.currentPlayer?' done':i===state.currentPlayer?' current':'');
+  }
+}
+
+function flipCard() {
+  if(state.flipped) return;
+  state.flipped=true;
+  const isSpy=state.roles[state.currentPlayer]==='spy';
+  const isHot=THEMES[state.theme].hot;
+  const front=document.getElementById('card-front');
+  const L=LANGS[currentLang];
+
+  if(isHot) {
+    front.className='card-face card-front '+(isSpy?'hot-spy-card':'hot-civ-card');
+  } else {
+    front.className='card-face card-front '+(isSpy?'spy-card':'civ-card');
+  }
+
+  if(isSpy){
+    front.innerHTML=`
+      <div class="role-badge">${L.role_your}</div>
+      <div class="role-icon">🕵️</div>
+      <div class="role-title">${L.spy}</div>
+      <div class="location-reveal" style="margin-top:1rem;">
+        <div style="color:${isHot?'var(--hot)':'var(--spy-red)'};font-size:0.78rem;">${L.no_location}</div>
+        <div style="font-size:0.72rem;color:rgba(240,238,232,0.5);margin-top:0.3rem;line-height:1.4;">${L.spy_hint}</div>
+      </div>`;
+  } else {
+    front.innerHTML=`
+      <div class="role-badge">${L.role_your}</div>
+      <div class="role-icon">${isHot?'🔥':'👤'}</div>
+      <div class="role-title">${L.civilian}</div>
+      <div class="location-reveal">
+        <div style="font-size:0.72rem;">${isHot?'🔥':''} ${THEMES[state.theme].label}</div>
+        <div class="location-name">${state.location}</div>
+        <div style="font-size:0.7rem;color:${isHot?'rgba(200,64,160,0.6)':'rgba(78,203,141,0.6)'};margin-top:0.3rem;line-height:1.4;">${L.civ_hint}</div>
+      </div>`;
+  }
+
+  document.getElementById('flip-inner').classList.add('flipped');
+  setTimeout(()=>{
+    const btn=document.getElementById('next-btn');
+    btn.classList.remove('hidden');
+    document.getElementById('next-btn-txt').textContent = state.currentPlayer===state.players-1 ? L.all_ready : L.next_player;
+  },600);
+}
+
+function nextPlayer() {
+  if(state.currentPlayer<state.players-1){state.currentPlayer++;updateCardScreen();}
+  else goPlay();
+}
+
+function goPlay() {
+  state.timerVal=state.time; state.timerRunning=false; clearInterval(state.timerInterval);
+  document.getElementById('timer-toggle').textContent='▶ Start';
+  document.getElementById('timer-display').classList.remove('danger');
+  updateTimer();
+  document.getElementById('play-theme-label').textContent=THEMES[state.theme].label;
+  document.getElementById('spy-count-badge').textContent=T('spies_badge')(state.spies);
+  document.getElementById('play-players').textContent=T('players_label')(state.players);
+  document.getElementById('play-theme').textContent=THEMES[state.theme].label;
+  showScreen('play-screen');
+}
+
+function updateTimer() {
+  const m=Math.floor(state.timerVal/60).toString().padStart(2,'0');
+  const s=(state.timerVal%60).toString().padStart(2,'0');
+  const el=document.getElementById('timer-display');
+  el.textContent=m+':'+s;
+  el.classList.toggle('danger',state.timerVal<=60&&state.timerVal>0);
+}
+
+function toggleTimer() {
+  if(state.timerRunning){
+    clearInterval(state.timerInterval); state.timerRunning=false;
+    document.getElementById('timer-toggle').textContent='▶ Start';
+  } else {
+    if(state.timerVal<=0) return;
+    state.timerRunning=true;
+    document.getElementById('timer-toggle').textContent='⏸ Pauza';
+    state.timerInterval=setInterval(()=>{
+      if(state.timerVal>0){state.timerVal--;updateTimer();}
+      else{clearInterval(state.timerInterval);state.timerRunning=false;document.getElementById('timer-toggle').textContent='▶ Start';}
+    },1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(state.timerInterval); state.timerRunning=false; state.timerVal=state.time;
+  document.getElementById('timer-toggle').textContent='▶ Start';
+  document.getElementById('timer-display').classList.remove('danger');
+  updateTimer();
+}
+
+function showReveal() {
+  clearInterval(state.timerInterval);
+  document.getElementById('reveal-location').textContent=state.location;
+  const list=document.getElementById('spies-list'); list.innerHTML='';
+  for(let i=0;i<state.players;i++){
+    if(state.roles[i]==='spy'){
+      const item=document.createElement('div'); item.className='spy-item';
+      item.innerHTML=`<div class="spy-avatar">🕵️</div><div><div class="spy-name">${LANGS[currentLang].lbl_player_ind} ${i+1}</div><div class="spy-tag">${LANGS[currentLang].spy_label}</div></div>`;
+      list.appendChild(item);
+    }
+  }
+  showScreen('reveal-screen');
+}
+
+function goSetup(){ showScreen('setup'); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+buildThemeGrid();
+validateSetup();
+</script>
